@@ -1,5 +1,5 @@
 # lambda-meta
-Program transformation library.
+Program transformation glossary.
 
 Don't be so curious.
 
