@@ -62,7 +62,7 @@
 	    => (lambda ((key . value))
 		 value))
 	   (else
-	    expresion)))))
+	    expression)))))
 
 (define (symbols expression)
   (match expression
@@ -76,13 +76,39 @@
 (e.g.
  (symbols '(+ (* 2 3) (/ 4 5))) ===> (* / +))
 
+(define (unbound-symbols expression)
+  (match expression
+    (`(quote ,literal)
+     '())
+    
+    (`(if ,condition ,consequent ,alternative)
+     (union (unbound-symbols condition)
+            (unbound-symbols consequent)
+            (unbound-symbols alternative)))
+
+    (`(lambda ,args ,body)
+     (difference (unbound-symbols body) args))
+
+    (`(,operator . ,operands)
+     (union (unbound-symbols operator)
+            (unbound-symbols operands)))
+
+    (_
+     (if (symbol? expression)
+         `(,expression)
+         '()))))
+
+(e.g.
+ (unbound-symbols '(lambda (x) (+ x y))) ===> (y +))
+
+
 (define (alpha-normalized expression)
   (let* ((suffixes (filter-map (lambda (symbol)
 				 (and-let* ((s (symbol->string symbol))
 					    (ms (string-match "^[?]([0-9]+)$" s))
 					    (ns (match:substring ms 1)))
 				   (string->number ns)))
-			       (symbols expression)))
+			       (unbound-symbols expression)))
 	 (initial (apply max 0 suffixes)))
     (parameterize ((new-name-for-symbol (next-symbol "?" initial)))
       ((alpha '()) expression))))
@@ -100,6 +126,11 @@
 		    '(lambda (y) (+ y y))))
 
 
+
+(e.g.
+ (let ((idemp-test (lambda (expr) (alpha-equivalent? expr (alpha-normalized expr)))))
+   (and (idemp-test '(lambda (x) (* x x)))
+        (idemp-test '(lambda (x) (* ((lambda (x) (+ x x)) x) ((lambda (x) (* x 3)) x)))))))
 
     
 
