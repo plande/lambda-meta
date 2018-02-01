@@ -1,4 +1,4 @@
-# lambda-meta
+# (lambda meta)
 Program transformation glossary.
 
 Don't be so curious.
