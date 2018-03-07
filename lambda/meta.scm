@@ -70,7 +70,7 @@
 				   (string->number ns)))
 			       (unbound-symbols expression)))
 	 (initial (apply max 0 suffixes)))
-    (parameterize ((alpha-parameter-new-name-for-symbol
+    (parameterize ((alpha-parameter/new-name-for-symbol
 		    (next-symbol "?" initial)))
       ((alpha '()) expression))))
 
