@@ -1,4 +1,6 @@
-(use-modules (grand scheme))
+(define-module (lambda path)
+  #:use-module (grand scheme)
+  #:export (optimal-path))
 
 (define* (optimial-path #:from initial-state ; a
 			#:on weighted-graph ; a -> [(a, Real)]
