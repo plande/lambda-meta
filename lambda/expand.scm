@@ -1,4 +1,11 @@
-(use-modules (grand scheme))
+(define-module (lambda expand)
+  #:use-module (grand scheme)
+  #:export (bind
+	    fill
+	    merge-bindings
+	    expand
+	    expand/track
+	    impand))
 
 (define-syntax (assert condition)
   (unless condition
@@ -173,7 +180,6 @@
                                    (2 5)
                                    (3 6)))
 
-
 (define (unzip-bindings bindings keys)
   (let* ((unzipped (only (lambda (`(,key . ,value))
 			   (and (is key member keys)
@@ -197,7 +203,6 @@
 	(a 1 2 3) (b 1 2 3) (c 1 2 3) (d . 4))
        ((a . 3) (c . 3)
 	(a 1 2 3) (b 1 2 3) (c 1 2 3) (d . 4))))
-
 
 (define (unique-symbol source)
   "every call to unique-symbol produces a distinct \
@@ -287,42 +292,6 @@ symbol which somehow resembles the source expression"
 	     `(,(expand operator)
 	       . ,(map expand operands))
              (expand transformed))))
-      (_
-       expression)))
-
-  (expand expression))
-
-(define (expand/step expression macros)
-  
-  (define (expand expression)
-    (define-syntax (try-expand expr cont alt)
-      (let ((expr* (expand expr)))
-	(if (equal? expr expr*)
-	    alt
-	    (let ((expr expr*))
-	      cont))))
-    (match expression
-      (`(quote ,_) expression)
-      (`(lambda ,args ,body)
-       (try-expand body `(lambda ,args ,body) expression))
-      (`(if ,condition ,then ,else)
-       (try-expand
-	condition
-	`(if ,condition ,then ,else)
-	(try-expand
-	 then
-	 `(if ,condition ,then ,else)
-	 (try-expand
-	  else
-	  `(if ,condition ,then ,else)
-	  expression))))
-      (`(,operator . ,operands)
-       (let ((transformed ((transform macros (argument 0))
-			   expression)))
-	 (if (equal? expression transformed)
-	     `(,(expand operator)
-	       . ,(map expand operands))
-             transformed)))
       (_
        expression)))
 
